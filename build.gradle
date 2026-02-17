@@ -1,0 +1,78 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.poc'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    sparkVersion = '2.4.4'
+    scalaBinaryVersion = '2.11'
+}
+
+dependencies {
+    // Spark Core (provided scope means compileOnly in Gradle)
+    compileOnly "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+    
+    // Spark SQL (provided scope)
+    compileOnly "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+    
+    // JSON Processing
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    //hadoop client for S3 access
+    implementation 'org.apache.hadoop:hadoop-aws:2.7.7'
+
+    // aws-java-sdk-bundle
+    implementation 'com.amazonaws:aws-java-sdk-bundle:1.11.901'
+}
+
+// Create a fat JAR task
+task fatJar(type: Jar) {
+    archiveBaseName.set('spark-json-reader')
+    archiveVersion.set('1.0-SNAPSHOT')
+    archiveClassifier.set('all')
+    
+    manifest {
+        attributes(
+            'Main-Class': 'com.poc.spark.JsonDataSender'
+        )
+    }
+    
+    // Include only runtime dependencies (not compileOnly like Spark)
+    from sourceSets.main.output
+    
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    // Exclude signature files
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Clean task
+clean {
+    delete 'build'
+}
+
+// Build task - depends on fatJar
+build {
+    dependsOn fatJar
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

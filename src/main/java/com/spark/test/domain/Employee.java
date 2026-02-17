@@ -1,4 +1,4 @@
-package com.poc.domain;
+package com.spark.test.domain;
 
 public class Employee {
     public int id;

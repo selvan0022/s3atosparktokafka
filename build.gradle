@@ -34,6 +34,9 @@ dependencies {
 
     // aws-java-sdk-bundle
     implementation 'com.amazonaws:aws-java-sdk-bundle:1.11.901'
+    
+    // Kafka Producer
+    implementation 'org.apache.kafka:kafka-clients:2.4.1'
 }
 
 // Create a fat JAR task
@@ -41,10 +44,11 @@ task fatJar(type: Jar) {
     archiveBaseName.set('spark-json-reader')
     archiveVersion.set('1.0-SNAPSHOT')
     archiveClassifier.set('all')
+    zip64 = true
     
     manifest {
         attributes(
-            'Main-Class': 'com.poc.spark.JsonDataSender'
+            'Main-Class': 'com.spark.test.JsonDataSender'
         )
     }
     
